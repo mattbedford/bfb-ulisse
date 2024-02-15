@@ -32,6 +32,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 // register_activation_hook( __FILE__, 'callback' );
 
 
+// Declare case-sensitive constant for use throughout plugin
+if ( !defined( 'BFB_POST_NAME' ) ) {
+    define( 'BFB_POST_NAME', 'Banner' );
+}
+
 //Set up admin page
 require_once plugin_dir_path( __FILE__ ) . 'bfb-admin.php';
 
