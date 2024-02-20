@@ -1,27 +1,45 @@
 <?php
 
 
-namespace BigfootBanner;
+namespace BannerTime;
 
 
-abstract class WPOrg_Meta_Box {
+abstract class AddFields {
 
 
     /**
-     * Set up and add the meta box.
+     * Set up and add the meta boxes for the banner.
+     * We'll have:
+     * simple_mode (checkbox)
+     * title (text)
+     * subtitle (text)
+     * image (file)
+     * link (text)
+     * link_text (text)
+     *  
      */
     public static function add(): void 
     {
-        $screens = [ 'post', 'wporg_cpt' ]; // this should become list of fields (as string so we can leverage in callback)
-        // possibly keep array of field names in options? Or by calling a func that returns an array...?
-        foreach ( $screens as $screen ) {
+        $fields = [
+            ['name' =>'simple_mode', 'type' => 'checkbox', 'desc' => 'Simple mode will only show the banner message and a close button.'],
+            ['name' =>'title', 'type' => 'text', 'desc' => 'The title of the banner.'],
+            ['name' =>'subtitle', 'type' => 'text', 'desc' => 'The subtitle of the banner.'],
+            ['name' =>'banner_message', 'type' => 'text', 'desc' => 'The message of the banner.'],
+            ['name' =>'link', 'type' => 'text', 'desc' => 'The link of the banner.'],
+            ['name' =>'link_text', 'type' => 'text', 'desc' => 'The link text of the banner.'],
+        ];
+        
+        foreach($fields as $field) {
             add_meta_box(
-                'wporg_box_id',          // Unique ID
-                'Custom Meta Box Title', // Box title
-                [ self::class, 'html' ],   // Content callback, must be of type callable
-                $screen                  // Post type
+                'bannertime_' . $field['name'],  // Unique ID
+                'Bannertime ' . $field['name'],   // Box title
+                [ self::class, function($post, $field) {
+                    self::html($post, $field);
+                }],
+                'BANNERTIME_POST_TYPE'              // Post type
             );
         }
+        
     }
 
 
@@ -47,19 +65,16 @@ abstract class WPOrg_Meta_Box {
      *
      * @param WP_Post $post   Post object.
      */
-    public static function html($post ): void
+    public static function html($post, $field ): void
     {
         $value = get_post_meta( $post->ID, '_wporg_meta_key', true );
-        ?>
-        <label for="wporg_field">Description for this field</label>
-        <select name="wporg_field" id="wporg_field" class="postbox">
-            <option value="">Select something...</option>
-            <option value="something" <?php selected( $value, 'something' ); ?>>Something</option>
-            <option value="else" <?php selected( $value, 'else' ); ?>>Else</option>
-        </select>
-        <?php
+
+        echo '<label for="bannertime_' . $field['name'] . '">' . $field['desc'] . '</label>';
+        echo '<input type="' . $field['type'] . '" name="bannertime_' . $field['name'] . '"';
+        echo 'id="bannertime_' . $field['name'] . '" class="postbox" value="' . $value . '">';
+       
     }
 }
 
-add_action( 'add_meta_boxes', [ 'WPOrg_Meta_Box', 'add' ] );
-add_action( 'save_post', [ 'WPOrg_Meta_Box', 'save' ] );
+add_action( 'add_meta_boxes', [ 'AddFields', 'add' ] );
+add_action( 'save_post', [ 'AddFields', 'save' ] );
